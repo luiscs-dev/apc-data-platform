@@ -24,7 +24,11 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./airflow
+
     steps:
     - name: Deploy to Astro
-      working-directory: ./airflow
       uses: astronomer/deploy-action@v0.4
