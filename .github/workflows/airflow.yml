@@ -26,4 +26,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Deploy to Astro
+      working-directory: ./airflow
       uses: astronomer/deploy-action@v0.4
