@@ -25,10 +25,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: ./airflow
-
     steps:
-    - name: Deploy to Astro
-      uses: astronomer/deploy-action@v0.4
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Step 2: Set up the working directory to the subdirectory
+      - name: Set working directory
+        working-directory: ./airflow  # Replace with your subdirectory path
+        run: echo "Changed working directory to airflow"
+
+      - name: Deploy to Astro
+        uses: astronomer/deploy-action@v0.4
+        working-directory: ./airflow
