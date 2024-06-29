@@ -29,4 +29,4 @@ jobs:
       - name: Deploy to Astro
         uses: astronomer/deploy-action@v0.4
         with:
-            root-folder: /airflow/
+            root-folder: ./airflow/
