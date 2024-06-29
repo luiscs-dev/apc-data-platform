@@ -15,7 +15,7 @@ on:
     branches:
       - main
     paths:
-      - 'airflow/**'
+      - 'airflow2/**'
 
 env:
   ASTRO_API_TOKEN: ${{ inputs.apiToken || secrets.ASTRO_API_TOKEN }}
