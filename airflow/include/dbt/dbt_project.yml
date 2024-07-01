@@ -1,7 +1,6 @@
 name: 'apc_dwh'
 config-version: 2
-version: version
-
+version: 1.0.0
 profile: 'apc_dwh'
 
 models:
