@@ -1,0 +1,9 @@
+checks for raw_players1:
+  - schema:
+      fail:
+        when required column missing: [provider_id, player_name, first_name, last_name, date_of_birth, gender, country]
+        when wrong column type:
+          provider_id: string
+          player_name: string
+          first_name: string
+          last_name: string
