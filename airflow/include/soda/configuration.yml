@@ -1,17 +1,6 @@
 data_source apc_dwh:
   type: bigquery
-  account_info:
-    type: "service_account"
-    project_id: "data-eng-training-87b25bc6"
-    private_key_id: "{{ env_var('GOOGLE_PRIVATE_KEY_ID') }}"
-    private_key: "{{ env_var('GOOGLE_PRIVATE_KEY') }}"
-    client_email: "{{ env_var('GOOGLE_CLIENT_EMAIL') }}"
-    client_id: "{{ env_var('GOOGLE_CLIENT_ID') }}"
-    auth_uri: "{{ env_var('GOOGLE_AUTH_URI') }}"
-    token_uri: "{{ env_var('GOOGLE_TOKEN_URI') }}"
-    auth_provider_x509_cert_url: "{{ env_var('GOOGLE_AUTH_PROVIDER_X509_CERT_URL') }}"
-    client_x509_cert_url: "{{ env_var('GOOGLE_CLIENT_X509_CERT_URL') }}"
-    universe_domain: "googleapis.com"
+  account_info_json_path: /usr/local/airflow/include/gcp/service_account.json
   auth_scopes:
   - https://www.googleapis.com/auth/bigquery
   - https://www.googleapis.com/auth/cloud-platform

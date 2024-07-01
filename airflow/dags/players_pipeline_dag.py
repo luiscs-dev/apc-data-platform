@@ -156,10 +156,11 @@ def players_pipeline():
     @task
     def create_gcloud_json() -> None:
         data = os.environ.get("GCLOUD_JSON")
-        gcloud_info = json.loads(data)
+        d = "{"+data+"}"
+        gcloud_info = json.loads(d.replace("\n", "\\n"))
         with open("include/gcp/service_account.json", 'w') as json_file:
-            json.dump(data, json_file, indent=4)
-        
+            json.dump(gcloud_info, json_file, indent=4)
+
     @task.external_python(python='/usr/local/airflow/soda_venv/bin/python')
     def check_load(scan_name='check_load', checks_subpath='sources'):
         from include.soda.check_function import check
