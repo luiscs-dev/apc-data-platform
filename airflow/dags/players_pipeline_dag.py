@@ -76,7 +76,7 @@ def players_pipeline():
                 raise ValueError(f"Request to Cloud Function failed: {response.status_code} {response.text}")
 
     _bucket = "apc-data-lake"
-    _bucket_path_prefix = "raw/{{ ds_format(ds, '%Y-%m-%d', '%Y-%m-%d') }}/"
+    _bucket_path_prefix = "raw/{{ macros.ds_format(ds, '%Y-%m-%d', '%Y/%m/%d') }}/"
     
     print(os.environ.get("GOOGLE_CLIENT_ID"))
     ingest_provider1 = ingest_gsheet({
