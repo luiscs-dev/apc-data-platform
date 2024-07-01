@@ -1,8 +1,8 @@
-name: 'apcdwh'
+name: 'apc_dwh'
 config-version: 2
 version: 1.0.0
-profile: 'apcdwh'
+profile: 'apc_dwh'
 
 models:
-  apcdwh:
+  apc_dwh:
     materialized: table

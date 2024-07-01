@@ -1,4 +1,4 @@
-apcdwh:
+apc_dwh:
  target: dev
  outputs:
   dev:
