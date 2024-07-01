@@ -144,8 +144,16 @@ def players_pipeline():
     
     dummy_task = DummyOperator(task_id='dummy')
 
+    @task.external_python(python='/usr/local/airflow/soda_venv/bin/python')
+    def check_load(scan_name='check_load', checks_subpath='sources'):
+        from include.soda.check_function import check
+
+        return check(scan_name, checks_subpath)
+    
     ingest_provider1 >> provider1_tobq >> dummy_task
     ingest_provider2 >> provider2_tobq >> dummy_task
     ingest_provider3 >> provider3_tobq >> dummy_task
+    
+    dummy_task >> check_load()
     
 players_pipeline()
