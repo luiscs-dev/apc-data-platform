@@ -1,6 +1,6 @@
 data_source apc_dwh:
   type: bigquery
-  account_info_json:
+  account_info:
     type: "service_account"
     project_id: "data-eng-training-87b25bc6"
     private_key_id: "{{ env_var('GOOGLE_PRIVATE_KEY_ID') }}"

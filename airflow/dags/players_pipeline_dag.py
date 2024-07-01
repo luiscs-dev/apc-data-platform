@@ -31,7 +31,8 @@ from astro.sql.table import Table, Metadata
 from astro.constants import FileType
 from airflow.operators.dummy import DummyOperator
 from airflow.operators.bash import BashOperator
-
+import os
+import json
 
 def post_to_cloud_function(**kwargs):   
     headers = {
@@ -65,15 +66,15 @@ def players_pipeline():
     
     @task
     def ingest_gsheet(payload: dict) -> None:
-            headers = {
-                'Content-Type': 'application/json'
-            }             
-            # Make the POST request
-            response = requests.post("https://us-central1-data-eng-training-87b25bc6.cloudfunctions.net/apc-data-ingestion", headers=headers, json=payload)
-            
-            # Check the response
-            if response.status_code != 200:
-                raise ValueError(f"Request to Cloud Function failed: {response.status_code} {response.text}")
+        headers = {
+            'Content-Type': 'application/json'
+        }             
+        # Make the POST request
+        response = requests.post("https://us-central1-data-eng-training-87b25bc6.cloudfunctions.net/apc-data-ingestion", headers=headers, json=payload)
+        
+        # Check the response
+        if response.status_code != 200:
+            raise ValueError(f"Request to Cloud Function failed: {response.status_code} {response.text}")
 
     _bucket = "apc-data-lake"
     _bucket_path_prefix = "raw/{{ macros.ds_format(ds, '%Y-%m-%d', '%Y/%m/%d') }}/"
@@ -149,9 +150,16 @@ def players_pipeline():
 
     bash_task = BashOperator(
         task_id='print_file_name_bash',
-        bash_command='echo "var name: $GOOGLE_CLIENT_ID"',
+        bash_command='echo "var name: $GCLOUD_JSON"',
     )
     
+    @task
+    def create_gcloud_json() -> None:
+        data = os.environ.get("GCLOUD_JSON")
+        gcloud_info = json.loads(data)
+        with open("include/gcp/service_account.json", 'w') as json_file:
+            json.dump(data, json_file, indent=4)
+        
     @task.external_python(python='/usr/local/airflow/soda_venv/bin/python')
     def check_load(scan_name='check_load', checks_subpath='sources'):
         from include.soda.check_function import check
@@ -162,7 +170,7 @@ def players_pipeline():
     ingest_provider2 >> provider2_tobq >> dummy_task
     ingest_provider3 >> provider3_tobq >> dummy_task
     
-    dummy_task >> bash_task
+    dummy_task >> create_gcloud_json() >> bash_task
     
     dummy_task >> check_load()
     
