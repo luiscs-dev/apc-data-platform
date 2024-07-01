@@ -1,4 +1,4 @@
-def check(scan_name, checks_subpath=None, data_source='retail', project_root='include'):
+def check(scan_name, checks_subpath=None, data_source='apc_dwh', project_root='include'):
     from soda.scan import Scan
 
     print('Running Soda Scan ...')
