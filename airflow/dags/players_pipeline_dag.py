@@ -29,6 +29,7 @@ from astro import sql as aql
 from astro.files import File
 from astro.sql.table import Table, Metadata
 from astro.constants import FileType
+from airflow.operators.dummy import DummyOperator
 
 
 def post_to_cloud_function(**kwargs):   
@@ -111,6 +112,40 @@ def players_pipeline():
         use_native_support=False,
     )
     
-    [ingest_provider1, ingest_provider2, ingest_provider3] >> provider1_tobq
+    provider2_tobq = aql.load_file(
+        task_id='provider2_tobq',
+        input_file=File(
+            'gs://apc-data-lake/raw/airflow2.csv',
+            conn_id='google_cloud_con',
+            filetype=FileType.CSV,
+        ),
+        output_table=Table(
+            name='raw_players2',
+            conn_id='google_cloud_con',
+            metadata=Metadata(schema='apc_dwh')
+        ),
+        use_native_support=False,
+    )
+    
+    provider3_tobq = aql.load_file(
+        task_id='provider3_tobq',
+        input_file=File(
+            'gs://apc-data-lake/raw/airflow2.csv',
+            conn_id='google_cloud_con',
+            filetype=FileType.CSV,
+        ),
+        output_table=Table(
+            name='raw_players3',
+            conn_id='google_cloud_con',
+            metadata=Metadata(schema='apc_dwh')
+        ),
+        use_native_support=False,
+    )
+    
+    dummy_task = DummyOperator(task_id='start_task', dag=dag)
+
+    ingest_provider1 >> provider1_tobq >> dummy_task
+    ingest_provider2 >> provider2_tobq >> dummy_task
+    ingest_provider3 >> provider3_tobq >> dummy_task
     
 players_pipeline()
