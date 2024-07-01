@@ -105,7 +105,7 @@ def players_pipeline():
         ),
         output_table=Table(
             name='raw_players1',
-            conn_id='gcp',
+            conn_id='google_cloud_con',
             metadata=Metadata(schema='apc_dwh')
         ),
         use_native_support=False,
