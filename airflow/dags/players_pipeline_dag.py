@@ -30,7 +30,7 @@ from astro.files import File
 from astro.sql.table import Table, Metadata
 from astro.constants import FileType
 from airflow.operators.dummy import DummyOperator
-import os
+from airflow.operators.bash import BashOperator
 
 
 def post_to_cloud_function(**kwargs):   
@@ -78,7 +78,6 @@ def players_pipeline():
     _bucket = "apc-data-lake"
     _bucket_path_prefix = "raw/{{ macros.ds_format(ds, '%Y-%m-%d', '%Y/%m/%d') }}/"
     
-    print(os.environ.get("GOOGLE_CLIENT_ID"))
     ingest_provider1 = ingest_gsheet({
         "spreadsheet_id": "https://docs.google.com/spreadsheets/d/1BNS_pZVMt55wlqkv2qfZiW8LPdcefFHPoYRFY4WVjf8",
         "tab_name": "players",
@@ -90,14 +89,14 @@ def players_pipeline():
         "spreadsheet_id": "https://docs.google.com/spreadsheets/d/1wNEh5U0YRerx2z_NXHdwpSgeFTXWtahakqw7iDWNQxo",
         "tab_name": "players",
         "bucket_name": _bucket,
-        "file_name": "raw/airflow2.csv"
+        "file_name": _bucket_path_prefix+"airflow2.csv"
     })
     
     ingest_provider3 = ingest_gsheet({
         "spreadsheet_id": "https://docs.google.com/spreadsheets/d/1ewdBpIk8tJGZrUdnUUQPyyiFoECuBqm8qPonlw37Hp0",
         "tab_name": "players",
         "bucket_name": _bucket,
-        "file_name": "raw/airflow3.csv"
+        "file_name": _bucket_path_prefix+"airflow3.csv"
     })
     
 
@@ -119,7 +118,7 @@ def players_pipeline():
     provider2_tobq = aql.load_file(
         task_id='provider2_tobq',
         input_file=File(
-            'gs://apc-data-lake/raw/airflow2.csv',
+            'gs://'+_bucket+"/"+_bucket_path_prefix+'airflow2.csv',
             conn_id='google_cloud_con',
             filetype=FileType.CSV,
         ),
@@ -134,7 +133,7 @@ def players_pipeline():
     provider3_tobq = aql.load_file(
         task_id='provider3_tobq',
         input_file=File(
-            'gs://apc-data-lake/raw/airflow2.csv',
+            'gs://'+_bucket+"/"+_bucket_path_prefix+'airflow3.csv',
             conn_id='google_cloud_con',
             filetype=FileType.CSV,
         ),
@@ -148,6 +147,11 @@ def players_pipeline():
     
     dummy_task = DummyOperator(task_id='dummy')
 
+    bash_task = BashOperator(
+        task_id='print_file_name_bash',
+        bash_command='echo "var name: $GOOGLE_CLIENT_ID"',
+    )
+    
     @task.external_python(python='/usr/local/airflow/soda_venv/bin/python')
     def check_load(scan_name='check_load', checks_subpath='sources'):
         from include.soda.check_function import check
@@ -157,6 +161,8 @@ def players_pipeline():
     ingest_provider1 >> provider1_tobq >> dummy_task
     ingest_provider2 >> provider2_tobq >> dummy_task
     ingest_provider3 >> provider3_tobq >> dummy_task
+    
+    dummy_task >> bash_task
     
     dummy_task >> check_load()
     
