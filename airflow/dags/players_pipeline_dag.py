@@ -33,6 +33,10 @@ from airflow.operators.dummy import DummyOperator
 from airflow.operators.bash import BashOperator
 import os
 import json
+from include.dbt.cosmos_config import DBT_PROJECT_CONFIG, DBT_CONFIG
+from cosmos.airflow.task_group import DbtTaskGroup
+from cosmos.constants import LoadMode
+from cosmos.config import ProjectConfig, RenderConfig
 
 def post_to_cloud_function(**kwargs):   
     headers = {
@@ -167,12 +171,22 @@ def players_pipeline():
 
         return check(scan_name, checks_subpath)
     
+    
+    transform = DbtTaskGroup(
+        group_id='transform',
+        project_config=DBT_PROJECT_CONFIG,
+        profile_config=DBT_CONFIG,
+        render_config=RenderConfig(
+            load_method=LoadMode.DBT_LS,
+            select=['path:models/transform']
+        )
+    )
+    
     ingest_provider1 >> provider1_tobq >> dummy_task
     ingest_provider2 >> provider2_tobq >> dummy_task
     ingest_provider3 >> provider3_tobq >> dummy_task
     
-    dummy_task >> create_gcloud_json() >> bash_task
+    dummy_task >> create_gcloud_json() >> check_load() >> transform >> bash_task
     
-    dummy_task >> check_load()
     
 players_pipeline()

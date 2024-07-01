@@ -1,0 +1,12 @@
+apc_dwh:
+ target: dev
+ outputs:
+  dev:
+    type: bigquery
+    method: service-account
+    keyfile: /usr/local/airflow/include/gcp/service_account.json
+    project: data-eng-training-87b25bc6
+    dataset: apc_dwh
+    threads: 1
+    timeout_seconds: 300
+    location: US
