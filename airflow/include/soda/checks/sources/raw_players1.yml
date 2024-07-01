@@ -7,3 +7,4 @@ checks for raw_players1:
           player_name: string
           first_name: string
           last_name: string
+          gender: string
