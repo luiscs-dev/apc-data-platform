@@ -30,6 +30,7 @@ from astro.files import File
 from astro.sql.table import Table, Metadata
 from astro.constants import FileType
 from airflow.operators.dummy import DummyOperator
+import os
 
 
 def post_to_cloud_function(**kwargs):   
@@ -74,25 +75,28 @@ def players_pipeline():
             if response.status_code != 200:
                 raise ValueError(f"Request to Cloud Function failed: {response.status_code} {response.text}")
 
-
+    _bucket = "apc-data-lake"
+    _bucket_path_prefix = "raw/{{ ds_format(ds, '%Y-%m-%d', '%Y-%m-%d') }}/"
+    
+    print(os.environ.get("GOOGLE_CLIENT_ID"))
     ingest_provider1 = ingest_gsheet({
         "spreadsheet_id": "https://docs.google.com/spreadsheets/d/1BNS_pZVMt55wlqkv2qfZiW8LPdcefFHPoYRFY4WVjf8",
         "tab_name": "players",
-        "bucket_name": "apc-data-lake",
-        "file_name": "raw/airflow1.csv"
+        "bucket_name": _bucket,
+        "file_name": _bucket_path_prefix+"airflow1.csv"
     })
     
     ingest_provider2 = ingest_gsheet({
         "spreadsheet_id": "https://docs.google.com/spreadsheets/d/1wNEh5U0YRerx2z_NXHdwpSgeFTXWtahakqw7iDWNQxo",
         "tab_name": "players",
-        "bucket_name": "apc-data-lake",
+        "bucket_name": _bucket,
         "file_name": "raw/airflow2.csv"
     })
     
     ingest_provider3 = ingest_gsheet({
         "spreadsheet_id": "https://docs.google.com/spreadsheets/d/1ewdBpIk8tJGZrUdnUUQPyyiFoECuBqm8qPonlw37Hp0",
         "tab_name": "players",
-        "bucket_name": "apc-data-lake",
+        "bucket_name": _bucket,
         "file_name": "raw/airflow3.csv"
     })
     
@@ -100,7 +104,7 @@ def players_pipeline():
     provider1_tobq = aql.load_file(
         task_id='provider1_tobq',
         input_file=File(
-            'gs://apc-data-lake/raw/airflow1.csv',
+            'gs://'+_bucket+"/"+_bucket_path_prefix+'airflow1.csv',
             conn_id='google_cloud_con',
             filetype=FileType.CSV,
         ),
