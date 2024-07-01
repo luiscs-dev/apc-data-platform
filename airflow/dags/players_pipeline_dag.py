@@ -142,7 +142,7 @@ def players_pipeline():
         use_native_support=False,
     )
     
-    dummy_task = DummyOperator(task_id='start_task', dag=dag)
+    dummy_task = DummyOperator(task_id='dummy')
 
     ingest_provider1 >> provider1_tobq >> dummy_task
     ingest_provider2 >> provider2_tobq >> dummy_task
