@@ -1,4 +1,6 @@
 name: 'apc_dwh'
+config-version: 2
+version: version
 
 profile: 'apc_dwh'
 
