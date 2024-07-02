@@ -186,7 +186,12 @@ def players_pipeline():
     ingest_provider2 >> provider2_tobq >> dummy_task
     ingest_provider3 >> provider3_tobq >> dummy_task
     
-    dummy_task >> create_gcloud_json() >> check_load() >> transform >> bash_task
+    bash_task2 = BashOperator(
+        task_id='dbt_transformations',
+        bash_command='source /usr/local/airflow/dbt_venv/bin/activate && dbt run --profiles-dir /usr/local/airflow/include/dbt/',
+    )
+    
+    dummy_task >> create_gcloud_json() >> check_load() >> transform >> bash_task >> bash_task2
     
     
 players_pipeline()
