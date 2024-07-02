@@ -4,8 +4,7 @@ version: 2
 sources:
   - name: apc_dwh
     database: data-eng-training-87b25bc6
-
     tables:
       - name: raw_players1
-			- name: raw_players2
-			- name: raw_players3
+      - name: raw_players2
+      - name: raw_players3

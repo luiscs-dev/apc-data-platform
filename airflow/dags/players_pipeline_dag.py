@@ -38,25 +38,6 @@ from cosmos.airflow.task_group import DbtTaskGroup
 from cosmos.constants import LoadMode
 from cosmos.config import RenderConfig
 
-def post_to_cloud_function(**kwargs):   
-    headers = {
-        'Content-Type': 'application/json'
-    } 
-    payload = {
-        "spreadsheet_id": "https://docs.google.com/spreadsheets/d/1ewdBpIk8tJGZrUdnUUQPyyiFoECuBqm8qPonlw37Hp0",
-        "tab_name": "players",
-        "bucket_name": "apc-data-lake",
-        "file_name": "raw/airflow1.csv"
-    }
-    
-    # Make the POST request
-    response = requests.post("https://us-central1-data-eng-training-87b25bc6.cloudfunctions.net/apc-data-ingestion", headers=headers, json=payload)
-    
-    # Check the response
-    if response.status_code != 200:
-        raise ValueError(f"Request to Cloud Function failed: {response.status_code} {response.text}")
-
-
 #Define the basic parameters of the DAG, like schedule and start_date
 @dag(
     start_date=datetime(2024, 1, 1),
@@ -171,16 +152,6 @@ def players_pipeline():
 
         return check(scan_name, checks_subpath)
     
-    
-    transform = DbtTaskGroup(
-        group_id='transform',
-        project_config=DBT_PROJECT_CONFIG,
-        profile_config=DBT_CONFIG,
-        render_config=RenderConfig(
-            load_method=LoadMode.DBT_LS,
-            select=['path:models/transform']
-        )
-    )
     
     ingest_provider1 >> provider1_tobq >> dummy_task
     ingest_provider2 >> provider2_tobq >> dummy_task
