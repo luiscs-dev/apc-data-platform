@@ -24,21 +24,14 @@ from airflow import Dataset
 from airflow.decorators import dag, task
 from pendulum import datetime
 import requests
-from airflow.operators.python import PythonOperator
 from astro import sql as aql
 from astro.files import File
 from astro.sql.table import Table, Metadata
 from astro.constants import FileType
-from airflow.operators.dummy import DummyOperator
 from airflow.operators.bash import BashOperator
 import os
 import json
-from include.dbt.cosmos_config import DBT_PROJECT_CONFIG, DBT_CONFIG
-from cosmos.airflow.task_group import DbtTaskGroup
-from cosmos.constants import LoadMode
-from cosmos.config import RenderConfig
 
-#Define the basic parameters of the DAG, like schedule and start_date
 @dag(
     start_date=datetime(2024, 1, 1),
     schedule="@daily",
@@ -131,13 +124,6 @@ def players_pipeline():
         use_native_support=False,
     )
     
-    dummy_task = DummyOperator(task_id='dummy')
-
-    bash_task = BashOperator(
-        task_id='print_file_name_bash',
-        bash_command='echo "var name: $GCLOUD_JSON"',
-    )
-    
     @task
     def create_gcloud_json() -> None:
         data = os.environ.get("GCLOUD_JSON")
@@ -152,11 +138,7 @@ def players_pipeline():
 
         return check(scan_name, checks_subpath)
     
-    
-    ingest_provider1 >> provider1_tobq >> dummy_task
-    ingest_provider2 >> provider2_tobq >> dummy_task
-    ingest_provider3 >> provider3_tobq >> dummy_task
-    
+        
     bash_task2 = BashOperator(
         task_id='dbt_transformations',
         bash_command='source /usr/local/airflow/dbt_venv/bin/activate && cd /usr/local/airflow/include/dbt/ && dbt deps && dbt run --project-dir /usr/local/airflow/include/dbt/ --profiles-dir /usr/local/airflow/include/dbt/',
@@ -168,7 +150,11 @@ def players_pipeline():
 
         return check(scan_name, checks_subpath)
     
-    dummy_task >> create_gcloud_json() >> check_load() >> bash_task >> bash_task2 >> check_transform()
+    ingest_provider1 >> provider1_tobq
+    ingest_provider2 >> provider2_tobq
+    ingest_provider3 >> provider3_tobq
+
+    [provider1_tobq, provider2_tobq, provider3_tobq] >> create_gcloud_json() >> check_load() >> bash_task2 >> check_transform()
     
     
 players_pipeline()
