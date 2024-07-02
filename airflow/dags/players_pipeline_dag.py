@@ -162,7 +162,13 @@ def players_pipeline():
         bash_command='source /usr/local/airflow/dbt_venv/bin/activate && cd /usr/local/airflow/include/dbt/ && dbt deps && dbt run --project-dir /usr/local/airflow/include/dbt/ --profiles-dir /usr/local/airflow/include/dbt/',
     )
     
-    dummy_task >> create_gcloud_json() >> check_load() >> bash_task >> bash_task2
+    @task.external_python(python='/usr/local/airflow/soda_venv/bin/python')
+    def check_transform(scan_name='check_transform', checks_subpath='transform'):
+        from include.soda.check_function import check
+
+        return check(scan_name, checks_subpath)
+    
+    dummy_task >> create_gcloud_json() >> check_load() >> bash_task >> bash_task2 >> check_transform()
     
     
 players_pipeline()

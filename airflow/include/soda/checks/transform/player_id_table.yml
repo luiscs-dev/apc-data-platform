@@ -1,0 +1,9 @@
+checks for player_id_table:
+  - schema:
+      fail:
+        when required column missing: 
+          [global_player_id, name, dob, provider_id1, provider_id2, provider_id3]
+  - duplicate_count(global_player_id) = 0:
+      name: All customers are unique
+  - missing_count(global_player_id) = 0:
+      name: All customers have a key
