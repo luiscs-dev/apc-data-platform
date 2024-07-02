@@ -36,7 +36,7 @@ def club_elo_pipeline():
     _bucket_path_prefix = "raw/club_elo/{{ macros.ds_format(ds, '%Y-%m-%d', '%Y/%m/%d') }}/"
     
     ingest_provider1 = ingest_club_elo({
-        "url": f"https://api.clubelo.com/{{ ds }}",
+        "url": "https://api.clubelo.com/{{ ds }}",
         "bucket_name": _bucket,
         "file_name": _bucket_path_prefix+"club_elo.csv"
     })

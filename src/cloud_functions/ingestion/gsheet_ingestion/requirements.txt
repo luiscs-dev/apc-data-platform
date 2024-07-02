@@ -1,0 +1,4 @@
+functions-framework==3.*
+airbyte
+google-cloud-storage
+google-cloud-secret-manager
