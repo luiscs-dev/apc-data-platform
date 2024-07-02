@@ -162,7 +162,7 @@ def players_pipeline():
         bash_command='source /usr/local/airflow/dbt_venv/bin/activate && cd /usr/local/airflow/include/dbt/ && dbt deps && dbt run --project-dir /usr/local/airflow/include/dbt/ --profiles-dir /usr/local/airflow/include/dbt/',
     )
     
-    dummy_task >> create_gcloud_json() >> check_load() >> transform >> bash_task >> bash_task2
+    dummy_task >> create_gcloud_json() >> check_load() >> bash_task >> bash_task2
     
     
 players_pipeline()
