@@ -8,3 +8,4 @@ sources:
       - name: raw_players1
       - name: raw_players2
       - name: raw_players3
+      - name: raw_club_elo

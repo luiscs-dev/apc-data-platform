@@ -1,0 +1,8 @@
+checks for raw_club_elo:
+  - schema:
+      fail:
+        when required column missing: [Rank,Club,Country,Level,Elo,From,To]
+        when wrong column type:
+          Rank: string
+          Club: string
+          Country: string
