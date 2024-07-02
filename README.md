@@ -21,22 +21,79 @@ The Tech Stack to solve this use case is:
 
 ***
 
-## DBT
+## Data Quality
 
-**DBT** allows us to transform data using SQL. It can be integrated in a CI/CD pipeline and it creates documentation about models.
+**SODA** was used to include checks over the ingested and transformed data.
 
-Data Quality is set using the **schema.yml**. You can set foreach column its tests 
-to be validated. For example the id column must be **unique** and **not_null**.
+The definition can be found in 
+```
+airflow/include/soda
+```
 
-DBT has generic tests (unique, not_null, accepted_values, relationships) which you can use but if you need more expecific rules
-you can take a look at
-- [dbt_expectations](https://github.com/calogica/dbt-expectations)
-- [soda](https://docs.soda.io/)
+The configuration is set to use BigQuery
+```
+data_source apc_dwh:
+  type: bigquery
+  account_info_json_path: /usr/local/airflow/include/gcp/service_account.json
+  auth_scopes:
+  - https://www.googleapis.com/auth/bigquery
+  - https://www.googleapis.com/auth/cloud-platform
+  - https://www.googleapis.com/auth/drive
+  project_id: 'data-eng-training-87b25bc6'
+  dataset: apc_dwh
+```
 
-Commands:
-- dbt run --select %my model name%
-- dbt test --select %my model name%
-- dbt docs generate
+
+Check can be found in the directory
+```
+airflow/include/soda/checks/sources
+```
+
+This is an example
+```
+checks for raw_players1:
+  - schema:
+      fail:
+        when required column missing: [provider_id, player_name, first_name, last_name, date_of_birth, gender, country]
+        when wrong column type:
+          provider_id: string
+          player_name: string
+          first_name: string
+          last_name: string
+          gender: string
+```
 
 
+## Data Transformation
+
+**DBT** was used to transform raw data into a useful structure.
+
+The definition can be found in 
+```
+airflow/include/dbt/models/transform
+```
+
+It is set to run on BigQuery.
+```
+apc_dwh:
+ target: dev
+ outputs:
+  dev:
+    type: bigquery
+    method: service-account
+    keyfile: /usr/local/airflow/include/gcp/service_account.json
+    project: data-eng-training-87b25bc6
+    dataset: apc_dwh
+    threads: 1
+    timeout_seconds: 300
+    location: US
+```
 ***
+
+
+## Data Visualization
+
+**Looker** was used to create a dashboard to present
+information in a friendly way.
+
+![Alt text](data/imgs/looker.png?raw=true "APC - Architecture Diagram")
